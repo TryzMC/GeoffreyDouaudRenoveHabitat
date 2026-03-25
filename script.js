@@ -202,7 +202,7 @@
   }, { threshold: 0.1, rootMargin: '0px 0px -60px 0px' });
 
   document.querySelectorAll(
-    '.reveal-left, .reveal-right, .reveal-card, .section-label, .travaux-item'
+    '.reveal-left, .reveal-right, .reveal-card, .section-label'
   ).forEach(el => observer.observe(el));
 })();
 
@@ -321,7 +321,7 @@ function startCounters() {
 // ============================================================
 (function () {
   const sections = document.querySelectorAll('section[id]');
-  const links    = document.querySelectorAll('.nm-link:not(.nm-cta):not([href="#contact"])');
+  const links    = document.querySelectorAll('.nm-link:not(.nm-cta)');
 
   window.addEventListener('scroll', () => {
     let current = '';
@@ -332,139 +332,4 @@ function startCounters() {
       l.style.color = l.getAttribute('href') === `#${current}` ? 'var(--white)' : '';
     });
   }, { passive: true });
-})();
-
-// ============================================================
-// 13. BEFORE / AFTER SLIDER
-// ============================================================
-(function () {
-  document.querySelectorAll('[data-slider]').forEach(slider => {
-    const before = slider.querySelector('.ba-before');
-    const handle = slider.querySelector('.ba-handle');
-    let dragging = false;
-
-    function setPos(pct) {
-      const clamped = Math.max(5, Math.min(95, pct));
-      before.style.width = clamped + '%';
-      handle.style.left  = clamped + '%';
-    }
-
-    function getPos(e, rect) {
-      const clientX = e.touches ? e.touches[0].clientX : e.clientX;
-      return ((clientX - rect.left) / rect.width) * 100;
-    }
-
-    slider.addEventListener('mousedown',  e => { dragging = true; e.preventDefault(); });
-    slider.addEventListener('touchstart', e => { dragging = true; }, { passive: true });
-
-    window.addEventListener('mouseup',  () => { dragging = false; });
-    window.addEventListener('touchend', () => { dragging = false; });
-
-    window.addEventListener('mousemove', e => {
-      if (!dragging) return;
-      setPos(getPos(e, slider.getBoundingClientRect()));
-    });
-    window.addEventListener('touchmove', e => {
-      if (!dragging) return;
-      setPos(getPos(e, slider.getBoundingClientRect()));
-    }, { passive: true });
-
-    // Initial handle position
-    handle.style.left = '50%';
-    handle.style.transform = 'translateX(-50%)';
-    handle.style.position = 'absolute';
-    handle.style.top = '0';
-    handle.style.bottom = '0';
-    handle.style.display = 'flex';
-    handle.style.flexDirection = 'column';
-    handle.style.alignItems = 'center';
-    handle.style.width = '40px';
-  });
-})();
-
-// ============================================================
-// 14. GALLERY FILTERS
-// ============================================================
-(function () {
-  const btns  = document.querySelectorAll('.gf-btn');
-  const cards = document.querySelectorAll('.ba-card[data-category]');
-
-  btns.forEach(btn => {
-    btn.addEventListener('click', () => {
-      btns.forEach(b => b.classList.remove('active'));
-      btn.classList.add('active');
-
-      const filter = btn.getAttribute('data-filter');
-      cards.forEach(card => {
-        if (filter === 'all' || card.getAttribute('data-category') === filter) {
-          card.classList.remove('filtered-out');
-        } else {
-          card.classList.add('filtered-out');
-        }
-      });
-    });
-  });
-})();
-
-// ============================================================
-// 15. LIGHTBOX
-// ============================================================
-(function () {
-  const lightbox = document.getElementById('lightbox');
-  const lbImg    = document.getElementById('lbImg');
-  const lbCap    = document.getElementById('lbCaption');
-  const lbClose  = document.getElementById('lbClose');
-  const lbPrev   = document.getElementById('lbPrev');
-  const lbNext   = document.getElementById('lbNext');
-  if (!lightbox) return;
-
-  let images = [];
-  let current = 0;
-
-  function buildImageList() {
-    images = [];
-    document.querySelectorAll('.ba-card--single .ba-single-img').forEach(wrap => {
-      const img = wrap.querySelector('img');
-      if (img) images.push({ src: img.src, alt: img.alt });
-    });
-    // also add after images from sliders
-    document.querySelectorAll('.ba-slider .ba-after img').forEach(img => {
-      images.push({ src: img.src, alt: img.alt });
-    });
-  }
-
-  function open(idx) {
-    buildImageList();
-    current = idx;
-    lbImg.src = images[current].src;
-    lbImg.alt = images[current].alt;
-    lbCap.textContent = images[current].alt;
-    lightbox.classList.add('open');
-    document.body.style.overflow = 'hidden';
-  }
-
-  function close() {
-    lightbox.classList.remove('open');
-    document.body.style.overflow = '';
-  }
-
-  function prev() { buildImageList(); current = (current - 1 + images.length) % images.length; lbImg.src = images[current].src; lbCap.textContent = images[current].alt; }
-  function next() { buildImageList(); current = (current + 1) % images.length; lbImg.src = images[current].src; lbCap.textContent = images[current].alt; }
-
-  // Single image cards → open lightbox
-  document.querySelectorAll('.ba-card--single .ba-single-img').forEach((wrap, i) => {
-    wrap.addEventListener('click', () => open(i));
-  });
-
-  lbClose.addEventListener('click', close);
-  lbPrev.addEventListener('click', prev);
-  lbNext.addEventListener('click', next);
-  lightbox.addEventListener('click', e => { if (e.target === lightbox) close(); });
-
-  document.addEventListener('keydown', e => {
-    if (!lightbox.classList.contains('open')) return;
-    if (e.key === 'Escape')     close();
-    if (e.key === 'ArrowLeft')  prev();
-    if (e.key === 'ArrowRight') next();
-  });
 })();
